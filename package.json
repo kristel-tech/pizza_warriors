@@ -1,0 +1,22 @@
+{
+    "name": "pizza_warriors",
+    "version": "1.0.0",
+    "description": "the war of the pizza gods",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/kristel-tech/pizza_warriors.git"
+    },
+    "author": "pizza_warriors",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/kristel-tech/pizza_warriors/issues"
+    },
+    "homepage": "https://github.com/kristel-tech/pizza_warriors#readme",
+    "dependencies": {
+        "express": "^4.17.1"
+    }
+}
