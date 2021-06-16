@@ -9,7 +9,10 @@ app.get('/pizza/:reqtype', (req, res) => {
     getreview.handle(req, res);
 })
 
-
+app.post('/pizza/:reqtype', (req, res) => {
+    let getreview = new GetReview();
+    getreview.handle(req, res);
+})
 
 
 
