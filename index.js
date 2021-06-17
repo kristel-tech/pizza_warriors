@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 let app = express();
 let port = process.env.PORT || 3000;
 
@@ -33,6 +34,50 @@ passport.use(new GitHubStrategy({
 ));
 
 
+app.post('/login', (re, res) => {
+    //////////
+    // authenticate user in DB
+    //mockuser
+    const user = {
+        id: 1,
+        username: 'potato',
+        email: 'testing@test.com'
+    }
+
+    jwt.sign({User: user}, 'secretKey', {expiresIn: '15s'}, (err, token) => {
+        res.json({token})
+    });
+});
+
+
+app.get('/test', (req, res) => res.send('AWE'))
+
+app.post('/testpost', verifyToken,(req, res) => {
+    jwt.verify(req.token, 'secretKey', (err, authData) => {
+        if(err){
+            res.sendStatus(403);
+        }else{
+            res.send('AWE POST' + authData)
+        }
+    });
+});
+
+
+//verify token
+
+function verifyToken(req,res,next){
+    const bearerHeader = req.headers['authorization'];
+    if(typeof bearerHeader !== 'undefined'){
+        const bearerToken = bearerHeader.split(' ')[1];
+        req.token = bearerToken;
+        next();
+    }else{
+        //FOGOF send 403 status
+        res.sendStatus(403);
+    }
+}
+
+////////////////////////////////////////////
 
 app.get('/auth/error', (req, res) => res.send('Unknown Error'))
 
@@ -43,9 +88,6 @@ app.get('/callback',
     function(req, res) {
         res.redirect('/callback');
     });
-
-
-
 
 
 app.listen(port, () => {
