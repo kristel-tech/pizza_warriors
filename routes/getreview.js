@@ -1,4 +1,5 @@
 const sendrequest = require('request');
+const keys = require("../secrats/keys.js");
 
 module.exports = function() {
         this.handle = function(request, response) {
@@ -10,7 +11,7 @@ module.exports = function() {
                 else
                     places = request.query.places;
 
-                sendrequest('https://maps.googleapis.com/maps/api/place/textsearch/json?query=' + places + '&radius=16000&key=AIzaSyCi0r402tQYs9H-kXlOfqRWVrdYqapwFA8', { json: true }, (err, res, body) => {
+                sendrequest('https://maps.googleapis.com/maps/api/place/textsearch/json?query=' + places + '&radius=16000&key='+keys, { json: true }, (err, res, body) => {
                     if (err) {
                         response.send("error")
                         return;
@@ -38,8 +39,8 @@ module.exports = function() {
                     response.send("error")
                 else
                     place_id = request.query.place_id;
-                https: //maps.googleapis.com/maps/api/place/details/json?place_id=ChIJacgiKPZhlR4RPPFFHAKubvM&key=AIzaSyCi0r402tQYs9H-kXlOfqRWVrdYqapwFA8
-                    sendrequest('https://maps.googleapis.com/maps/api/place/details/json?place_id=' + place_id + '&key=AIzaSyCi0r402tQYs9H-kXlOfqRWVrdYqapwFA8', { json: true }, (err, res, body) => {
+                // https: //maps.googleapis.com/maps/api/place/details/json?place_id=ChIJacgiKPZhlR4RPPFFHAKubvM&key=AIzaSyCi0r402tQYs9H-kXlOfqRWVrdYqapwFA8
+                    sendrequest('https://maps.googleapis.com/maps/api/place/details/json?place_id=' + place_id + '&key='+keys, { json: true }, (err, res, body) => {
                         if (err) {
                             response.send("error")
                             return;
