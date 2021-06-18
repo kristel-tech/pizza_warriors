@@ -4,6 +4,8 @@
     "description": "the war of the pizza gods",
     "main": "index.js",
     "scripts": {
+        "test": "standard",
+        "dev": "nodemon index.js",
         "start": "node index.js "
     },
     "repository": {
@@ -24,6 +26,10 @@
         "nodemon": "^2.0.7",
         "passport": "^0.4.1",
         "passport-github": "^1.1.0",
+        "passport-oauth": "^1.0.0",
+        "request": "^2.88.2",
+        "standard": "^16.0.3",
+        "util": "^0.12.4"
         "passport-jwt": "^4.0.0"
     }
 }
