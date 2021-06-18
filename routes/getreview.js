@@ -1,5 +1,4 @@
 const sendrequest = require('request');
-const keys = require("../secrats/keys.js");
 
 module.exports = function() {
         this.handle = function(request, response) {
@@ -11,7 +10,7 @@ module.exports = function() {
                 else
                     places = request.query.places;
 
-                sendrequest('https://maps.googleapis.com/maps/api/place/textsearch/json?query=+pizza+places+in' + places + '&radius=16000&key='+keys, { json: true }, (err, res, body) => {
+                sendrequest('https://maps.googleapis.com/maps/api/place/textsearch/json?query=+pizza+places+in' + places + '&radius=16000&key='+process.env.GOOGLE_KEY, { json: true }, (err, res, body) => {
                     if (err) {
                         response.send("error")
                         return;
@@ -40,27 +39,29 @@ module.exports = function() {
                 else
                     place_id = request.query.place_id;
                 // https: //maps.googleapis.com/maps/api/place/details/json?place_id=ChIJacgiKPZhlR4RPPFFHAKubvM&key=AIzaSyCi0r402tQYs9H-kXlOfqRWVrdYqapwFA8
-                    sendrequest('https://maps.googleapis.com/maps/api/place/details/json?place_id=' + place_id + '&key='+keys, { json: true }, (err, res, body) => {
+                    sendrequest('https://maps.googleapis.com/maps/api/place/details/json?place_id=' + place_id + '&key='+process.env.GOOGLE_KEY, { json: true }, (err, res, body) => {
                         if (err) {
                             response.send("error")
                             return;
                         }
-                        var ire = body.result.reviews
-                            // console.log(body.result.reviews[0])
                         let review_data = []
+                        if (body.result.reviews){
+                            var ire = body.result.reviews
+                                console.log(body.result)
 
+                            ire.forEach(i => {
+                                // console.log(i)
+                                let reviews = {
+                                    name: i.author_name,
+                                    rating: i.rating,
+                                    review: i.text,
+                                }
+                                review_data.push(reviews)
 
-                        ire.forEach(i => {
-                            // console.log(i)
-                            let reviews = {
-                                name: i.author_name,
-                                rating: i.rating,
-                                review: i.text,
-                            }
-                            review_data.push(reviews)
-
-                        })
-                        response.send(JSON.stringify(review_data));
+                            })
+                        }else
+                            review_data.push({Error: "No Available Reviews"})
+                        response.send(JSON.stringify(body.result.reviews));
                     });
             } else if (request.params.reqtype === "localpictures") {
                 let local_id;
@@ -68,7 +69,7 @@ module.exports = function() {
                     response.send("error")
                 else
                     local_id = request.query.place_id;
-                    sendrequest('https://maps.googleapis.com/maps/api/place/details/json?place_id=' + local_id + '&key='+ keys, { json: true }, (err, res, body) => {
+                    sendrequest('https://maps.googleapis.com/maps/api/place/details/json?place_id=' + local_id + '&key='+ process.env.GOOGLE_KEY, { json: true }, (err, res, body) => {
                         if (err) {
                             response.send("error")
                             return;
@@ -78,7 +79,7 @@ module.exports = function() {
                         var ire = body.result.photos
                         {
                         ire.forEach(i => {
-                            sendrequest('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=' + i.photo_reference + '&key=' + keys, { json: true }, (err, res, body) => {
+                            sendrequest('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=' + i.photo_reference + '&key=' + process.env.GOOGLE_KEY, { json: true }, (err, res, body) => {
                             if (err) {
                                 response.send("error")
                                 return;
