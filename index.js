@@ -1,3 +1,5 @@
+const path = require('path');
+const SetReview = require("./routes/setreviews.js");
 require('dotenv').config();
 const express = require('express');
 const jwt = require('jsonwebtoken');
@@ -37,6 +39,9 @@ app.post('/signup', con.CheckUser, (req, res) => {
     con.AddUser(req, res);
 });
 
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 
 app.get('/pizza/:reqtype', passport.authenticate('jwt', {session: false}),(req, res) => {
     let getreview = new GetReview();
@@ -54,6 +59,7 @@ app.delete('/deletereview', passport.authenticate('jwt', {session: false}), (req
     let setreview = new SetReview()
     setreview.DeleteReview(req, res);
 });
+
 
 
 app.listen(port, () => {

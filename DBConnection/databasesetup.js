@@ -1,4 +1,7 @@
-var mysql = require('mysql');
+
+const { request } = require('express');
+var mysql = require('mysql2');
+
 const DatabaseCreds = require("./config.js");
 
 class DatabaseConnection {
@@ -23,7 +26,6 @@ class DatabaseConnection {
         return new Promise((resolve, reject) => {
             this.connection.query(query, shopdata, (err, result) => {
                 if (err) {
-                    this.connection.end();
                     return reject(err);
                 }
                 resolve(result);
@@ -39,7 +41,6 @@ class DatabaseConnection {
         return new Promise((resolve, reject) => {
             this.connection.query(query, pizzadata, (err, result) => {
                 if (err) {
-                    this.connection.end();
                     return reject(err);
                 }
                 resolve(result);
@@ -55,7 +56,6 @@ class DatabaseConnection {
         return new Promise((resolve, reject) => {
             this.connection.query(query, pizzadata, (err, result) => {
                 if (err) {
-                    this.connection.end();
                     return reject(err);
                 }
                 resolve(result);
@@ -71,11 +71,137 @@ class DatabaseConnection {
         return new Promise((resolve, reject) => {
             this.connection.query(query, pizzadata, (err, result) => {
                 if (err) {
-                    this.connection.end();
                     return reject(err);
                 }
                 resolve(result);
             });
+          this.connection.end();
+        });
+    }
+
+    DeleteReview(reviewId, userId) {
+        let query = `CALL spDeleteReview(?, ?)`;
+        let requestData = [reviewId , userId];
+
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, requestData, (err, result) => {
+                if (err) {
+                    console.log(err);
+                    return reject(err);
+                }
+                resolve(result);
+            });
+          this.connection.end();
+        });
+    }
+
+    UpdateReview(reviewId, userId, reviewText) {
+        let query = `CALL sp_UpdateReview(?, ?, ?)`;
+        let requestData = [reviewId, userId, reviewText];
+
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, requestData, (err, result) => {
+                if (err) {
+                    return reject(err);
+                    console.log(err);
+                }
+                resolve(result);
+            });
+          this.connection.end();
+        });
+    }
+
+    GetActiveReviewsByUserId(userId) {
+        let query = `CALL spGetActiveReviewsByUserId(?)`;
+        let requestData = userId;
+
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, requestData, (err, result) => {
+                if (err) {
+                    return reject(err);
+                    console.log(err);
+                }
+                resolve(result);
+            });
+          this.connection.end();
+        });
+    }
+
+    InsertNewShopReview(reviewText, rating, userId, pizzaName, placeId, shopName) {
+        let query = "CALL spCreateNewShopReview(?, ?, ?, ?, ?, ?)";
+
+        let requestData = [reviewText, rating, userId, pizzaName, shopName, placeId];
+
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, requestData, (err, result) => {
+                if(err){
+                    console.log(err.sqlMessage);
+                    return reject(err);
+                }
+                return resolve(result);
+            });
+          this.connection.end();
+        });
+    }
+
+    InsertExistingShopReview(shopId, pizzaName, rating, userId, reviewText){
+        let query = 'CALL sp_CreateExistingShopReview(?, ? , ?, ?, ?, ?)';
+        let requestData = [shopId, pizzaName, rating, userId, review];
+
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, requestData, (err, result) => {
+                if(err){
+                    return reject(err);
+                }
+                resolve(result);
+            });
+          this.connection.end();
+        });
+    }
+
+    UpdatePizzaShop(shopId, name, placeId){
+        if (!this.connection.error) {
+            let query = `CALL spUpdatePizzaShop(?, ?, ?)`;
+            let requestData = [shopId, placeId, name];
+
+            return new Promise((resolve, reject) => {
+                this.connection.query(query, requestData, (err, result) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(result);
+                });
+              this.connection.end();
+            });
+        }
+    }
+}
+
+module.exports = function () {
+    this.AddReview = function (recdata, request, response, CSuccess, CError) {
+        let con = new DatabaseConnection();
+        if (!con.error) {
+            console.log(recdata);
+            con.InsertPizzashops(recdata.placeid, recdata.name).then((pizzashopsresult) => {
+                con.InsertPizza(recdata.pizzaname).then((pizzaresult) => {
+                    con.RelatePizzashopAndPizza(pizzashopsresult.insertId, pizzaresult.insertId).then((Relateresult) => {
+                        con.InsertReview(recdata.userid, Relateresult.insertId, recdata.review, Number(recdata.rating)).then((Reviewresult) => {
+
+                            response.send(CSuccess("REVIEW_ADD_SUCCESS", request.url, recdata));
+                        })
+                            .catch((err) => {
+                                response.send(CError(err, request.url + 4));
+                            });
+                    })
+                        .catch((err) => {
+                            response.send(CError(err, request.url + 3));
+                        });
+                })
+                    .catch((err) => {
+                        response.send(CError(err, request.url + 2));
+                    });
+            })
+                .catch((err) => { response.send(CError(err, request.url + 1)); });
             this.connection.end();
         });
     }
@@ -130,11 +256,6 @@ class DatabaseConnection {
 
 }
 
-
-
-
-
-
 module.exports = function() {
     this.AddReview = function(recdata, request, response, CSuccess, CError) {
         let con = new DatabaseConnection();
@@ -157,8 +278,6 @@ module.exports = function() {
             });
             })
             .catch((err) => { response.send(CError(err, request.url+1));});
-
-                
         } else
             response.send("ERROR");
     }
