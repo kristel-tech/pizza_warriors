@@ -1,5 +1,4 @@
 const path = require('path');
-const SetReview = require("./routes/setreviews.js");
 require('dotenv').config();
 const express = require('express');
 const jwt = require('jsonwebtoken');
