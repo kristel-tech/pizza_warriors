@@ -5,6 +5,7 @@ const DatabaseConnection = require('./DBConnection/databasesetup.js');
 const con = new DatabaseConnection();
 const app = express();
 const GetReview = require("./routes/getreview.js");
+const SetReview = require("./routes/setreview.js");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -27,7 +28,7 @@ passport.use(new jwtStrategy(opts, function(jwt_payload, done) {
 }));
 
 app.post('/login', con.GetUser,(req, res) => {
-    jwt.sign({User: req.user}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '30s'}, (err, token) => {
+    jwt.sign({User: req.user}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '3000s'}, (err, token) => {
         res.json({token})
     });
 });
@@ -37,20 +38,25 @@ app.post('/signup', con.CheckUser, (req, res) => {
 });
 
 
-app.get('/pizza/:reqtype', (req, res) => {
+app.get('/pizza/:reqtype', passport.authenticate('jwt', {session: false}),(req, res) => {
     let getreview = new GetReview();
     getreview.handle(req, res);
 })
 
-app.post('/pizza/:reqtype', (req, res) => {
-    let getreview = new GetReview();
-    getreview.handle(req, res);
-})
+
+app.post('/addreview', passport.authenticate('jwt', {session: false}),(req, res) => {
+    let setreview = new SetReview()
+    setreview.AddReview(req, res);
+});
+
+
+app.delete('/deletereview', passport.authenticate('jwt', {session: false}), (req, res) => {
+    let setreview = new SetReview()
+    setreview.DeleteReview(req, res);
+});
+
 
 app.listen(port, () => {
     console.log('Server is listening on port ' +
         port);
 });
-
-// https: //maps.googleapis.com/maps/api/place/details/json?place_id=ChIJR06iIONglR4RKvJoEK5diHk&fields=reviews&key=AIzaSyCi0r402tQYs9H-kXlOfqRWVrdYqapwFA8
-// https: //maps.googleapis.com/maps/api/place/textsearch/json?query=pizza+places+in+pretoria&key=AIzaSyCi0r402tQYs9H-kXlOfqRWVrdYqapwFA8
