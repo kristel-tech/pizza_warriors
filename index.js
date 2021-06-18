@@ -1,3 +1,5 @@
+const path = require('path');
+const SetReview = require("./routes/setreviews.js");
 require('dotenv').config();
 const express = require('express');
 const jwt = require('jsonwebtoken');
@@ -36,16 +38,27 @@ app.post('/signup', con.CheckUser, (req, res) => {
     con.AddUser(req, res);
 });
 
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-app.get('/pizza/:reqtype', (req, res) => {
-    let getreview = new GetReview();
-    getreview.handle(req, res);
-})
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname + '/testhtml.html'));
+});
 
-app.post('/pizza/:reqtype', (req, res) => {
-    let getreview = new GetReview();
-    getreview.handle(req, res);
-})
+app.post('/addreview', (req, res) => {
+    let setreview = new SetReview()
+    setreview.AddReview(req, res);
+});
+
+app.post('/updatereview', (req, res) => {
+    console.log(req);
+    res.send(req.body.khutjo);
+});
+
+app.delete('/deletereview', (req, res) => {
+
+    res.send("fgfgfg");
+});
 
 app.listen(port, () => {
     console.log('Server is listening on port ' +
