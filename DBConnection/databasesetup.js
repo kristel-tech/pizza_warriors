@@ -47,7 +47,7 @@ class DatabaseConnection {
 
     RelatePizzashopAndPizza(pizzashopid, pizzaid) {
         let query = 'INSERT INTO `RELATEPIZZASHOPSPIZZAS` SET ?';
-        let pizzadata = { SHOPID: pizzashopid, PIZZAID: pizzaid }
+        let pizzadata = { SHOPID: pizzashopid, PIZZAID: pizzaid}
 
         return new Promise((resolve, reject) => {
             this.connection.query(query, pizzadata, (err, result) => {
@@ -61,7 +61,7 @@ class DatabaseConnection {
 
     InsertReview(userid, RelatId, review, rating) {
         let query = 'INSERT INTO `REVIEWS` SET ?';
-        let pizzadata = { USERID: userid, TOPIC: RelatId, REVIEW: review, RATING: rating }
+        let pizzadata = { USERID: userid, TOPIC: RelatId, REVIEW: review, RATING: rating}
 
         return new Promise((resolve, reject) => {
             this.connection.query(query, pizzadata, (err, result) => {

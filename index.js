@@ -1,20 +1,22 @@
-const express = require('express')
-const connect = require("./DBConnection/databasesetup.js");
-const GetReview = require("./routes/getreview.js");
-const app = express()
+const express = require('express');
+const path = require('path');
+const app = express();
+const SetReview = require("./routes/setreviews.js");
 let port = process.env.PORT || 3000;
 
-app.get('/pizza/:reqtype', (req, res) => {
-    let getreview = new GetReview();
-    getreview.handle(req, res);
-})
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-app.post('/pizza/:reqtype', (req, res) => {
-    let getreview = new GetReview();
-    getreview.handle(req, res);
-})
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname + '/testhtml.html'));
+});
 
-app.put('/updatereview', (req, res) => {
+app.post('/addreview', (req, res) => {
+    let setreview = new SetReview()
+    setreview.AddReview(req, res);
+});
+
+app.post('/updatereview', (req, res) => {
     console.log(req);
     res.send(req.body.khutjo);
 });
