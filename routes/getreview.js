@@ -1,5 +1,29 @@
 const sendrequest = require('request');
 
+function CompileError(err, route) {
+    var errorjson = {
+        timestamp: new Date().toISOString(),
+        status: 500,
+        error: "Internal Server Error ",
+        message: err,
+        "path": route
+    }
+    return (errorjson);
+}
+
+function CompileSuccess(data, route, params, calltype) {
+    var errorjson = {
+        timestamp: new Date().toISOString(),
+        status: 200,
+        success: true,
+        message: calltype + " success",
+        path: route,
+        data: data,
+        params: params
+    }
+    return (errorjson);
+}
+
 module.exports = function() {
         this.handle = function(request, response) {
 
@@ -12,7 +36,7 @@ module.exports = function() {
 
                 sendrequest('https://maps.googleapis.com/maps/api/place/textsearch/json?query=+pizza+places+in' + places + '&radius=16000&key='+process.env.GOOGLE_KEY, { json: true }, (err, res, body) => {
                     if (err) {
-                        response.send("error")
+                        response.send(CompileError({Error: "NO_AVAILABLE_LOCALS"}))
                         return;
                     }
                     let local_data = []
@@ -30,27 +54,26 @@ module.exports = function() {
                             local_data.push(local)
                         }
                     })
-                    response.send(JSON.stringify(local_data));
+                    response.send(CompileSuccess(local_data, request.url, request.query, "getlocals"));
                 });
             } else if (request.params.reqtype === "localsreview") {
                 let place_id;
                 if (!request.query && request.query.place_id === '')
-                    response.send("error")
+                    response.send(CompileError({Error: "NO_AVAILABLE_LOCALS"}))
                 else
                     place_id = request.query.place_id;
-                // https: //maps.googleapis.com/maps/api/place/details/json?place_id=ChIJacgiKPZhlR4RPPFFHAKubvM&key=AIzaSyCi0r402tQYs9H-kXlOfqRWVrdYqapwFA8
+                
                     sendrequest('https://maps.googleapis.com/maps/api/place/details/json?place_id=' + place_id + '&key='+process.env.GOOGLE_KEY, { json: true }, (err, res, body) => {
                         if (err) {
-                            response.send("error")
+                            response.send(CompileError({Error: "NO_AVAILABLE_REVIEWS"}))
                             return;
                         }
                         let review_data = []
-                        if (body.result.reviews){
+                        if (body.result !== undefined && body.result.reviews !== undefined){
                             var ire = body.result.reviews
                                 console.log(body.result)
 
                             ire.forEach(i => {
-                                // console.log(i)
                                 let reviews = {
                                     name: i.author_name,
                                     rating: i.rating,
@@ -60,35 +83,41 @@ module.exports = function() {
 
                             })
                         }else
-                            review_data.push({Error: "No Available Reviews"})
-                        response.send(JSON.stringify(body.result.reviews));
+                            review_data.push(CompileError({Error: "NO_AVAILABLE_REVIEWS"}));
+                        response.send(JSON.stringify(review_data));
                     });
             } else if (request.params.reqtype === "localpictures") {
                 let local_id;
-                if (!request.query && request.query.place_id === '')
+                if (!request.query === undefined &&  request.query.place_id === undefined && request.query.place_id === '')
                     response.send("error")
-                else
+                else{
                     local_id = request.query.place_id;
                     sendrequest('https://maps.googleapis.com/maps/api/place/details/json?place_id=' + local_id + '&key='+ process.env.GOOGLE_KEY, { json: true }, (err, res, body) => {
-                        if (err) {
-                            response.send("error")
-                            return;
-                        }
+                        if (err) {response.send(CompileError({Error: "NO_AVAILABLE_REVIEWS"}));return;}
+                        // console.log(body.result.photos)
 
-                        if (body.result.photos)
-                        var ire = body.result.photos
-                        {
-                        ire.forEach(i => {
-                            sendrequest('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=' + i.photo_reference + '&key=' + process.env.GOOGLE_KEY, { json: true }, (err, res, body) => {
-                            if (err) {
-                                response.send("error")
-                                return;
-                                }
+                        if (body.result !== undefined && body.result.photos !== undefined){
+                            
+                            var ire = body.result.photos
+                            let index = body.result.photos.length
+                            
+                            let review_data = []
+                            ire.forEach(i => {
+                                sendrequest('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=' + i.photo_reference + '&key=' + process.env.GOOGLE_KEY, { json: true }, (err, res, photohref) => {
+                                if (err) {response.send(CompileError({Error: "NO_AVAILABLE_REVIEWS"}))
+                                    return;
+                                    }
+                                    review_data.push(photohref)
+                                    console.log(photohref)
+                                    if(index == body.result.photos.length)
+                                        response.send(CompileSuccess(review_data, request.url, request.query, "localpictures"));
+                                })
                             })
-                        })
-                    }
-                });
+                            return
+                        }
+                        response.send(CompileError({Error: "NO_AVAILABLE_REVIEWS"}))
+                    });
+                }
             }
         }
     }
-    // "locationbias=-29.082519,26.154220" & radius = 16000

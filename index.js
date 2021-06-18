@@ -28,6 +28,8 @@ passport.use(new jwtStrategy(opts, function(jwt_payload, done) {
     }
 }));
 
+app.get('/', (req, res) =>{res.send("nothing here");})
+
 app.post('/login', con.GetUser,(req, res) => {
     jwt.sign({User: req.user}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '3000s'}, (err, token) => {
         res.json({token})
