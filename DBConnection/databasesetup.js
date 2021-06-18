@@ -206,6 +206,23 @@ module.exports = function () {
         });
     }
 
+    DeleteReview(reviewId) {
+        let query = 'DELETE FROM `reviews` WHERE ?';
+        let requestData = {reviewId: reviewId};
+
+        return new Promise((resolve, reject) => {
+            this.connection.query(query, requestData, (err, result) => {
+                if (err) {
+                    console.log(err);
+                    return reject(err);
+                }
+                resolve(result);
+            });
+          this.connection.end();
+        });
+    }
+
+
     RetrieveUser(username){
         let query = 'SELECT `ID`, `USERNAME`, `EMAIL`  FROM `USER` WHERE ? ORDER by TMSTAMP DESC limit 1';
         let tokendata = { USERNAME: username}
@@ -265,6 +282,8 @@ module.exports = function() {
             response.send("ERROR");
     }
 
+
+
     this.GetUser = function (req,res,next){
         if (!req.body.username){
             res.sendStatus(403);
@@ -317,4 +336,28 @@ module.exports = function() {
             .catch((err) => { res.sendStatus(403);});
         }
     }
+
+    this.DeleteReview = function (recdata, request, response, CSuccess, CError){
+        let con = new DatabaseConnection();
+        if (!con.error) {
+            con.DeleteReview(recdata.reviewId).then((result) => {
+                response.send(CSuccess("REVIEW_DELETED", request.url, recdata));
+            })
+            .catch((err) => { response.send(CError(err, request.url+4));
+            });
+        }
+    }
+
+    this.DeleteReview = function (recdata, request, response, CSuccess, CError){
+        let con = new DatabaseConnection();
+        if (!con.error) {
+            con.DeleteReview(request.body.reviewId,request.body.reviewText,Number(recdata.rating)).then((result) => {
+                response.send(CSuccess("REVIEW_DELETED", request.url, recdata));
+            })
+            .catch((err) => { response.send(CError(err, request.url+4));
+            });
+        }
+    }
+
+    
 }
