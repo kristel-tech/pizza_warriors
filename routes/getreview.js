@@ -11,7 +11,7 @@ module.exports = function() {
                 else
                     places = request.query.places;
 
-                sendrequest('https://maps.googleapis.com/maps/api/place/textsearch/json?query=' + places + '&radius=16000&key='+keys, { json: true }, (err, res, body) => {
+                sendrequest('https://maps.googleapis.com/maps/api/place/textsearch/json?query=+pizza+places+in' + places + '&radius=16000&key='+keys, { json: true }, (err, res, body) => {
                     if (err) {
                         response.send("error")
                         return;
@@ -62,6 +62,31 @@ module.exports = function() {
                         })
                         response.send(JSON.stringify(review_data));
                     });
+            } else if (request.params.reqtype === "localpictures") {
+                let local_id;
+                if (!request.query && request.query.place_id === '')
+                    response.send("error")
+                else
+                    local_id = request.query.place_id;
+                    sendrequest('https://maps.googleapis.com/maps/api/place/details/json?place_id=' + local_id + '&key='+ keys, { json: true }, (err, res, body) => {
+                        if (err) {
+                            response.send("error")
+                            return;
+                        }
+
+                        if (body.result.photos)
+                        var ire = body.result.photos
+                        {
+                        ire.forEach(i => {
+                            sendrequest('https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=' + i.photo_reference + '&key=' + keys, { json: true }, (err, res, body) => {
+                            if (err) {
+                                response.send("error")
+                                return;
+                                }
+                            })
+                        })
+                    }
+                });
             }
         }
     }
