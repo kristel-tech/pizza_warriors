@@ -5,7 +5,7 @@ const DatabaseConnection = require('./DBConnection/databasesetup.js');
 const con = new DatabaseConnection();
 const app = express();
 const GetReview = require("./routes/getreview.js");
-// const SetReview = require("./routes/setreview.js");
+const SetReview = require("./routes/setreview.js");
 const path = require('path');
 
 app.use(express.urlencoded({ extended: true }));
@@ -50,16 +50,16 @@ app.get('/pizza/:reqtype', passport.authenticate('jwt', {session: false}),(req, 
 })
 
 
-// app.post('/addreview', passport.authenticate('jwt', {session: false}),(req, res) => {
-//     let setreview = new SetReview()
-//     setreview.AddReview(req, res);
-// });
+app.post('/addreview', passport.authenticate('jwt', {session: false}),(req, res) => {
+    let setreview = new SetReview()
+    setreview.AddReview(req, res);
+});
 
 
-// app.delete('/deletereview', passport.authenticate('jwt', {session: false}), (req, res) => {
-//     let setreview = new SetReview()
-//     setreview.DeleteReview(req, res);
-// });
+app.delete('/deletereview', passport.authenticate('jwt', {session: false}), (req, res) => {
+    let setreview = new SetReview()
+    setreview.DeleteReview(req, res);
+});
 
 
 
