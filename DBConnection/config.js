@@ -1,4 +1,3 @@
-
 const DatabaseCreds = {
     host: 'remotemysql.com',
     user: 'CsJRuhA9v6',
