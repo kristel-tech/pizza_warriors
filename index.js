@@ -14,9 +14,15 @@ app.post('/pizza/:reqtype', (req, res) => {
     getreview.handle(req, res);
 })
 
+app.put('/updatereview', (req, res) => {
+    console.log(req);
+    res.send(req.body.khutjo);
+});
 
+app.delete('/deletereview', (req, res) => {
 
-
+    res.send("fgfgfg");
+});
 
 app.listen(port, () => {
     console.log('Server is listening on port ' +
